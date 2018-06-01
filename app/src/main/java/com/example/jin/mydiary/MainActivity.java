@@ -36,8 +36,8 @@ import java.util.Calendar;
  * ---- 20180530 여기까지 완료
  * 5. 지도 삽입 (약속 장소 몇 개 보여주기, 장소는 내가 미리 입력해둔 장소만 표시)
  * 6. 다이어리 저장 방법 (SQLite 등 DB 연동)
- * TODO
- * x. 사진 전송 기능 (Firebase Storage 이용)
+ * 7. 스티커 삽입
+ * ---- 20180601 여기까지 완료!
  */
 
 public class MainActivity extends AppCompatActivity {
@@ -46,7 +46,6 @@ public class MainActivity extends AppCompatActivity {
 
 	private CalendarView cal;
 	private ListView lis;
-	private Calendar selectedCalendar = Calendar.getInstance();
 	private ArrayAdapter<Diary> adapter;
 	private ArrayList<Diary> objects = new ArrayList<>();
 	private MediaPlayer mPlayer;
@@ -66,7 +65,9 @@ public class MainActivity extends AppCompatActivity {
 		cal.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
 			@Override
 			public void onSelectedDayChange(@NonNull CalendarView calendarView, int year, int month, int dayOfMonth) {
-				selectedCalendar.set(year, month, dayOfMonth, 0, 0, 0);
+				objects = getObjectsFromDB(year, month, dayOfMonth);
+				adapter = new DiaryAdapter(MainActivity.this, android.R.layout.simple_list_item_2, objects);
+				lis.setAdapter(adapter);
 			}
 		});
 		lis = findViewById(R.id.lis);
@@ -232,6 +233,33 @@ public class MainActivity extends AppCompatActivity {
 		ArrayList<Diary> objects = new ArrayList<>();
 		sqlDB = myHelper.getReadableDatabase();
 		Cursor cursor = sqlDB.rawQuery("SELECT * FROM diaryDB;", null);
+
+		while (cursor.moveToNext()) {
+			Diary diary = new Diary();
+			diary.set_id(cursor.getInt(0));
+			diary.setTitle(cursor.getString(1));
+			diary.setContent(cursor.getString(2));
+			diary.setDate(cursor.getLong(3));
+			diary.setPhotoUrl(cursor.getString(4));
+			objects.add(diary);
+		}
+		cursor.close();
+		sqlDB.close();
+
+		return objects;
+	}
+
+	private ArrayList<Diary> getObjectsFromDB(int year, int month, int dayOfMonth) {
+		ArrayList<Diary> objects = new ArrayList<>();
+		sqlDB = myHelper.getReadableDatabase();
+		long startMillis;
+		long endMillis;
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(year, month, dayOfMonth, 0, 0, 0);
+		startMillis = calendar.getTimeInMillis();
+		calendar.set(year, month, dayOfMonth, 23, 59, 59);
+		endMillis = calendar.getTimeInMillis();
+		Cursor cursor = sqlDB.rawQuery("SELECT * FROM diaryDB WHERE date >= " + startMillis + " AND date <= " + endMillis + ";", null);
 
 		while (cursor.moveToNext()) {
 			Diary diary = new Diary();

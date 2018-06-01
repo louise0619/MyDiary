@@ -8,11 +8,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import java.util.Calendar;
@@ -22,16 +24,15 @@ public class AddDiaryActivity extends AppCompatActivity {
 	private EditText edtTitle;
 	private EditText edtContent;
 	private EditText edtDate;
-	private FrameLayout flImg;
+	private Spinner spiEmo;
 	private ImageView img;
-	private Button btnImg;
-	private Button btnCancel;
-	private Button btnSave;
 
 	private Calendar selectedDate;
 	private String photoUrl = "";
 	private boolean isAdd = true; // 다이어리가 추가 상태인지, 수정 상태인지 판별하기 위한 변수
 	private int _id;
+
+	private final String[] emoticons = {"즐거움", "기쁨", "수줍음", "심각함", "슬픔", "화남"};
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -49,11 +50,23 @@ public class AddDiaryActivity extends AppCompatActivity {
 		edtTitle = findViewById(R.id.edt_title);
 		edtContent = findViewById(R.id.edt_content);
 		edtDate = findViewById(R.id.edt_date);
+		spiEmo = findViewById(R.id.spi_emo);
+		spiEmo.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, emoticons));
+		spiEmo.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
+				photoUrl = "emo0" + (position + 1);
+				setEmoticon(photoUrl);
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> adapterView) {
+
+			}
+		});
 		img = findViewById(R.id.img);
-		flImg = findViewById(R.id.fl_img);
-		btnImg = findViewById(R.id.btn_img);
-		btnCancel = findViewById(R.id.btn_cancel);
-		btnSave = findViewById(R.id.btn_save);
+		Button btnCancel = findViewById(R.id.btn_cancel);
+		Button btnSave = findViewById(R.id.btn_save);
 
 		selectedDate = Calendar.getInstance();
 		edtDate.setText(String.format(Locale.getDefault(), "%4d-%02d-%02d", selectedDate.get(Calendar.YEAR), selectedDate.get(Calendar.MONTH) + 1, selectedDate.get(Calendar.DAY_OF_MONTH)));
@@ -71,8 +84,8 @@ public class AddDiaryActivity extends AppCompatActivity {
 			selectedDate.setTimeInMillis(bundle.getLong("date", System.currentTimeMillis()));
 			edtDate.setText(String.format(Locale.getDefault(), "%4d-%02d-%02d", selectedDate.get(Calendar.YEAR), selectedDate.get(Calendar.MONTH) + 1, selectedDate.get(Calendar.DAY_OF_MONTH)));
 			if (bundle.containsKey("photoUrl")) {
-				// TODO set photoURL into img
-				btnImg.setText("이미지 수정");
+				photoUrl = bundle.getString("photoUrl");
+				setEmoticon(photoUrl);
 			}
 		}
 //날짜변경
@@ -141,5 +154,34 @@ public class AddDiaryActivity extends AppCompatActivity {
 				break;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	void setEmoticon(String photoUrl) {
+		switch (photoUrl) {
+			case "emo01":
+				img.setImageResource(R.drawable.emo01);
+				spiEmo.setSelection(0);
+				break;
+			case "emo02":
+				img.setImageResource(R.drawable.emo02);
+				spiEmo.setSelection(1);
+				break;
+			case "emo03":
+				img.setImageResource(R.drawable.emo03);
+				spiEmo.setSelection(2);
+				break;
+			case "emo04":
+				img.setImageResource(R.drawable.emo04);
+				spiEmo.setSelection(3);
+				break;
+			case "emo05":
+				img.setImageResource(R.drawable.emo05);
+				spiEmo.setSelection(4);
+				break;
+			case "emo06":
+				img.setImageResource(R.drawable.emo06);
+				spiEmo.setSelection(5);
+				break;
+		}
 	}
 }

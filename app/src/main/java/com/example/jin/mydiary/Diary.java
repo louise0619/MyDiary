@@ -6,8 +6,6 @@ class Diary {
 	private String content;
 	private long date;
 	private String photoUrl;
-	private double lat;
-	private double lng;
 
 	Diary() {
 	}
