@@ -30,6 +30,8 @@ public class AddDiaryActivity extends AppCompatActivity {
 
 	private Calendar selectedDate;
 	private String photoUrl = "";
+	private boolean isAdd = true; // 다이어리가 추가 상태인지, 수정 상태인지 판별하기 위한 변수
+	private int _id;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +45,7 @@ public class AddDiaryActivity extends AppCompatActivity {
 			actionBar.setHomeButtonEnabled(true);
 		}
 
+		// 뷰 초기화
 		edtTitle = findViewById(R.id.edt_title);
 		edtContent = findViewById(R.id.edt_content);
 		edtDate = findViewById(R.id.edt_date);
@@ -51,15 +54,18 @@ public class AddDiaryActivity extends AppCompatActivity {
 		btnImg = findViewById(R.id.btn_img);
 		btnCancel = findViewById(R.id.btn_cancel);
 		btnSave = findViewById(R.id.btn_save);
+
 		selectedDate = Calendar.getInstance();
-		selectedDate.setTimeInMillis(getIntent().getLongExtra("date", System.currentTimeMillis()));
 		edtDate.setText(String.format(Locale.getDefault(), "%4d-%02d-%02d", selectedDate.get(Calendar.YEAR), selectedDate.get(Calendar.MONTH) + 1, selectedDate.get(Calendar.DAY_OF_MONTH)));
 
+		// 다이어리를 수정할 때
 		if (getIntent().getExtras() != null) {
+			isAdd = false;
 			Bundle bundle = getIntent().getExtras();
 			if (actionBar != null) {
 				actionBar.setTitle("기존 다이어리 수정");
 			}
+			_id = bundle.getInt("_id");
 			edtTitle.setText(bundle.getString("title"));
 			edtContent.setText(bundle.getString("content"));
 			selectedDate.setTimeInMillis(bundle.getLong("date", System.currentTimeMillis()));
@@ -69,7 +75,7 @@ public class AddDiaryActivity extends AppCompatActivity {
 				btnImg.setText("이미지 수정");
 			}
 		}
-
+//날짜변경
 		edtDate.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
@@ -83,7 +89,7 @@ public class AddDiaryActivity extends AppCompatActivity {
 				datePickerDialog.show();
 			}
 		});
-
+//일기 저장 취소
 		btnCancel.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
@@ -91,35 +97,42 @@ public class AddDiaryActivity extends AppCompatActivity {
 				finish();
 			}
 		});
+//일기 저장
+		btnSave.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				String title = edtTitle.getText().toString();
+				String content = edtContent.getText().toString();
+				if (TextUtils.isEmpty(title)) {
+					Toast.makeText(AddDiaryActivity.this, "제목과 내용을 전부 입력하세요!", Toast.LENGTH_SHORT).show();
+					edtTitle.requestFocus();
+					return;
+				}
 
-		btnSave.setOnClickListener(view -> {
-			String title = edtTitle.getText().toString();
-			String content = edtContent.getText().toString();
-			if (TextUtils.isEmpty(title)) {
-				Toast.makeText(this, "제목과 내용을 전부 입력하세요!", Toast.LENGTH_SHORT).show();
-				edtTitle.requestFocus();
-				return;
+				if (TextUtils.isEmpty(content)) {
+					Toast.makeText(AddDiaryActivity.this, "제목과 내용을 전부 입력하세요!", Toast.LENGTH_SHORT).show();
+					edtContent.requestFocus();
+					return;
+				}
+				Intent intent = new Intent();
+				Bundle bundle = new Bundle();
+				if (!isAdd) {
+					bundle.putInt("_id", _id);
+				}
+				bundle.putString("title", title);
+				bundle.putString("content", content);
+				bundle.putLong("date", selectedDate.getTimeInMillis());
+				if (!TextUtils.isEmpty(photoUrl)) {
+					bundle.putString("photoUrl", photoUrl);
+				}
+				intent.putExtras(bundle);
+				setResult(RESULT_OK, intent);
+				finish();
 			}
-
-			if (TextUtils.isEmpty(content)) {
-				Toast.makeText(this, "제목과 내용을 전부 입력하세요!", Toast.LENGTH_SHORT).show();
-				edtContent.requestFocus();
-				return;
-			}
-			Intent intent = new Intent();
-			Bundle bundle = new Bundle();
-			bundle.putString("title", title);
-			bundle.putString("content", content);
-			bundle.putLong("date", selectedDate.getTimeInMillis());
-			if (!TextUtils.isEmpty(photoUrl)) {
-				bundle.putString("photoUrl", photoUrl);
-			}
-			intent.putExtras(bundle);
-			setResult(RESULT_OK, intent);
-			finish();
 		});
 	}
 
+	//탭바?에 뒤로가기 버튼
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {

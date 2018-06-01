@@ -3,8 +3,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.example.jin.mydiary.MainActivity">
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_music"
         android:orderInCategory="100"
-        android:title="@string/action_settings"
+        android:title="음악 재생"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_map"
+        android:orderInCategory="100"
+        android:title="약속장소 확인"
         app:showAsAction="never" />
 </menu>
